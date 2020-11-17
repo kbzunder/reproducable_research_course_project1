@@ -69,9 +69,69 @@ Which 5-minute interval, on average across all the days in the dataset, contains
 which.max(aver_steps$steps)
 interv<-aver_steps$interval[104]
 ```
-Interval number `r interv` contains the maximum number of steps
+Interval number `r interv` contains the maximum number of steps.
+
 ## Imputing missing values
 
+Note that there are a number of days/intervals where there are missing values (coded as 
+NA
+NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
 
+Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with 
+NA)
+```{r}
+nuber_of_missing_values<-sum(is.na(data$steps))
+```
+Number of missing value in a dataset are `nuber_of_missing_values`
+
+Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
+
+```{r}
+mean_interval<-aggregate(steps~interval, data=cleaned, mean)
+```
+Create a new dataset that is equal to the original dataset but with the missing data filled in.
+
+```{r}
+new_df <- data
+for (i in 1:nrow(new_df)) {
+  if(is.na(new_df$steps[i])) {
+    dat <- mean_interval$steps[which(mean_interval$interval == new_df$interval[i])]
+    new_df$steps[i]<-dat
+  }
+}
+```
+Make a histogram of the total number of steps taken each day and 
+```{r}
+aggregated_new<-aggregate(new_df$steps, by=list(new_df$date), sum)
+colnames(aggregated_new)<-c('date','steps')
+ggplot(aggregated_new, aes(x = steps)) +
+  geom_histogram(fill = "purple", binwidth = 1000) +
+  labs(title = "Steps a day", x = "steps", y = "frequency")
+```
+Calculate and report the mean and median total number of steps taken per day. 
+```{r}
+mean_steps_new<-mean(aggregated_new$steps)
+mean_steps_new
+median_steps_new<-median(aggregated_new$steps)
+median_steps_new
+```
+
+Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?
+
+| median steps(imputed) | median steps   |             
+| :----------------     | :----------:   |
+|   10766.19            |   10765        |
+
+
+| mean steps(imputed)   |   mean steps   |          
+| :----------------     | :----------:   |
+|` 10766.19             |    10766.19    |
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
+
+
+Make a panel plot containing a time series plot (i.e. 
+type = "l"
+type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
