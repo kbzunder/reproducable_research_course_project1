@@ -131,7 +131,29 @@ Do these values differ from the estimates from the first part of the assignment?
 
 Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 
+```{r}
+weekday<-weekdays(as.Date(new_df$date,'%Y-%m-%d'))
+new_df_weekdays<-mutate(new_df, weekdays=weekday)
+for (i in 1:length(weekday)){
+  if(weekday[i]=="Saturday"||weekday[i]=="Sunday"){
+    new_df_weekdays$type_day[i]<-"Weekend"
+  } else{
+    new_df_weekdays$type_day[i]<-"Weekday"
+  }
+}
 
-Make a panel plot containing a time series plot (i.e. 
-type = "l"
-type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
+new_df_weekdays$type_day<-as.factor(new_df_weekdays$type_day)
+
+steps_per_day_type_imputed<-aggregate(steps~interval+type_day,new_df_weekdays,mean)
+```
+Make a panel plot containing a time series plot 
+
+```{r}
+plot_1 <- ggplot(steps_per_day_type_imputed, aes(interval, steps)) +
+  geom_line(stat = "identity", aes(colour = type_day)) +
+  facet_grid(type_day~ ., scales="fixed", space="fixed") +
+  labs(x="intervals", y="steps") +
+  ggtitle("Average Number of Steps by Interval and Day Type")
+print(plot_1)
+```
+We can see a difference between average  number of steps on weekends and weekdays: on weekends we don't se picks of activity, and the user starts moving later.
